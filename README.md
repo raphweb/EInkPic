@@ -1,5 +1,5 @@
 # EInker
-E-Ink with ESP32
+E-Ink Picture Frame with ESP32
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ These instructions will get you a copy of the project (including submodules) up 
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/raphweb/EInker --recurse-submodules
+   git clone https://github.com/raphweb/EInkPic --recurse-submodules
    ```
 1. Open Vs Code
 1. Open Platform IO and add Project
