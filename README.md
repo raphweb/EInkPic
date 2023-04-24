@@ -1,4 +1,4 @@
-# EInker
+# EInkPic
 E-Ink Picture Frame with ESP32
 
 ## Getting Started
