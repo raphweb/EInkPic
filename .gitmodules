@@ -1,0 +1,9 @@
+[submodule "software/lib/GxEPD2"]
+	path = software/lib/GxEPD2
+	url = https://github.com/raphweb/GxEPD2
+[submodule "software/lib/Adafruit-GFX-Library"]
+	path = software/lib/Adafruit-GFX-Library
+	url = https://github.com/adafruit/Adafruit-GFX-Library
+[submodule "software/lib/Adafruit_BusIO"]
+	path = software/lib/Adafruit_BusIO
+	url = https://github.com/adafruit/Adafruit_BusIO
