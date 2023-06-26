@@ -25,8 +25,8 @@ SPIClass hspi(HSPI);
 
 void initialiseDisplay() {
     hspi.begin(EPD_SCK, EPD_MISO, EPD_MOSI, EPD_CS);
-    display.epd2.selectSPI(hspi, SPISettings(2500000, MSBFIRST, SPI_MODE0));
-    display.init(115200);//, true, 2, false);
+    display.epd2.selectSPI(hspi, SPISettings(4000000, MSBFIRST, SPI_MODE0));
+    display.init(115200, true, 2, false);
     display.clearScreen();
     display.setFullWindow();
 }
