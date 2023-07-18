@@ -4,6 +4,7 @@
 #include <Fonts/FreeSans12pt7b.h>
 
 #include <DisplayConfig.hpp>
+#include <image.hpp>
 
 void fillWithColor(uint16_t color) {
   display.firstPage();
@@ -37,8 +38,10 @@ void setup() {
   Serial.begin(115200);
   while(!Serial) {}
   initialiseDisplay();
+  display.writeNative(gImage_7in3f, nullptr, 100, 16, 600, 448, false, false, true);
+  display.refresh();
   //clearAllColors();
-  display.firstPage();
+  /*display.firstPage();
   display.setFont(&FreeSans12pt7b);
   display.setTextColor(GxEPD_BLACK);
   do {
@@ -46,6 +49,7 @@ void setup() {
     display.setCursor(25, 85);
     display.print("ESP and EPaper is easy!");
   } while (display.nextPage());
+  */
   display.powerOff();
   Serial.println("Entering deep sleep forever.");
   delay(1000);
