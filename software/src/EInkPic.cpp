@@ -34,12 +34,22 @@ void clearAllColors() {
   delay(5000);
 }
 
+void drawPicture(const void* voidCurrIndex) {
+  uint32_t currIndex = *(reinterpret_cast<const uint32_t*>(voidCurrIndex));
+  display.copyToRawPixelBuffer(&testPic[currIndex]);
+  currIndex += GxEPD2_DRIVER_CLASS::WIDTH/2 * display.pageHeight();
+}
+
 void setup() {
   Serial.begin(115200);
   while(!Serial) {}
   initialiseDisplay();
-  display.writeNative(gImage_7in3f, nullptr, 100, 16, 600, 448, false, false, true);
+  uint32_t currIndex = 0;
+  //display.drawPaged(drawPicture, &currIndex);
+  display.writeNative(testPic, nullptr, 0, 0, 800, 480, false, false, true);
+  //display.writeNative(gImage_7in3f, nullptr, 100, 16, 600, 448, false, false, true);
   display.refresh();
+  //display.epd2.
   //clearAllColors();
   /*display.firstPage();
   display.setFont(&FreeSans12pt7b);
