@@ -2,105 +2,89 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <GxEPD2_7C.h>
-#include <Fonts/FreeSans12pt7b.h>
-
 #include <DisplayConfig.hpp>
-#include <image.hpp>
+
 
 
 const char* mqtt_server = "homeassistant.local";
 const char* user = "mqttuser";
 const char* pswd = "pwd";
+const char* name = "eink1";
 const int port = 1883;
-int state = 0;
-
+enum state_t{
+  WAIT_FOR_IMAGE = 0,
+  PART_1_REVCIEVED = 1,
+  PART_2_REVCIEVED = 2,
+  PART_3_REVCIEVED = 3,
+  PART_4_REVCIEVED = 4,
+  CONFIG_RECIEVED = 5,
+};
+state_t state = WAIT_FOR_IMAGE;
+uint64_t sleep_time = 30;
 WiFiClient espClient;
 
-void handle_states(byte number){
+void callback(char* topic, byte* message, unsigned int length) ;
 
+PubSubClient client(mqtt_server, port,callback,espClient);
+
+void handle_states(byte number){
+  Serial.print("State handling:  ");
+  Serial.print(number);
+  if (state == ((int)number-48-1)){
+      state = (state_t)(number-48);
+      }
+  else{
+    Serial.print("UPS");
+  }
 
 }
 
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
-  handle_states(message[11]);
-  Serial.print(". Message: ");
-  String messageTemp;
-  
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)message[i]);
-    messageTemp += (char)message[i];
+  handle_states(message[9]);
+  if(state < 5){
+    display.copyToRawPixelBuffer(&(message[21]));
+    display.nextPage();
+    client.publish(("Eink_frame/"+String(name)+"/ack").c_str(),String(state).c_str());
   }
-  Serial.println();
+  else
+    {
+      sleep_time = 30; //TODO change later
+      client.publish(("Eink_frame/"+String(name)+"/ack").c_str(),String(state).c_str());
+      //TODO set time to sleep
+    }
 }
 
-PubSubClient client(mqtt_server, port,callback,espClient);
 
-void reconnect(){
-  WiFi.mode(WIFI_STA);
-  WiFi.begin("WIFI", "PWD");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
-    delay(1000);
-  }
-  if( client.connect("einkpanel1",user,pswd)){
-    client.subscribe("Eink_frame/eink1/send_image");
-  }
-}
 
-uint32_t currIndex = 0;
 
-void drawPicture(const void*) {
-  display.copyToRawPixelBuffer(&(testPic[currIndex]));
-  currIndex += GxEPD2_DRIVER_CLASS::WIDTH/2 * display.pageHeight();
-}
 
 void setup() {
   Serial.begin(115200);
   while(!Serial) {}
   initialiseDisplay();
-  display.drawPaged(drawPicture, nullptr);
-  currIndex = 0;
-  display.refresh();
-  display.powerOff();
-  Serial.println("Entering deep sleep forever.");
-  delay(1000);
-  //initialiseDisplay();
+  display.firstPage();
   WiFi.mode(WIFI_STA);
-  WiFi.begin("nicht mit dem Internet", "HuFwz@R#221");
+  WiFi.begin("WIFI", "pwd");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(1000);
-  }
+  } 
   client.setBufferSize(64000);
-  if( client.connect("einkpanel1",user,pswd)){
-    client.subscribe("Eink_frame/eink1/send_image");
+  if( client.connect(name,user,pswd)){
+    client.subscribe(("Eink_frame/"+String(name)+"/send_image").c_str());
   }
-  Serial.println(WiFi.localIP());
-  //display.writeNative(gImage_7in3f, nullptr, 0, 0, 800, 480, false, false, true);
-  //display.refresh();
-  //clearAllColors();
-  /*display.firstPage();
-
-  
-  display.setFont(&FreeSans12pt7b);
-  display.setTextColor(GxEPD_BLACK);
-  do {
-    display.fillScreen(GxEPD_WHITE);
-    display.setCursor(25, 85);
-    display.print("ESP and EPaper is easy!");
-  } while (display.nextPage());
-  */
-  //display.powerOff(); 
-  while (true)
+  client.publish(("Eink_frame/"+String(name)+"/get_image").c_str(),"hi_guys"); 
+  while (state < CONFIG_RECIEVED)
   {
     client.loop();
   }
+  display.refresh();
   Serial.println("Entering deep sleep ");
- 
-  Serial.flush();
-  esp_deep_sleep_start();
+  Serial.flush();  
+  display.powerOff();
+  esp_deep_sleep(sleep_time*60000000);
 }
 
 
