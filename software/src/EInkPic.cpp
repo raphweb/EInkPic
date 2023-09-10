@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <GxEPD2_7C.h>
 #include <DisplayConfig.hpp>
+#include <ArduinoJson.h>
 
 
 
@@ -22,7 +23,7 @@ enum state_t{
 state_t state = WAIT_FOR_IMAGE;
 uint64_t sleep_time = 30;
 WiFiClient espClient;
-
+StaticJsonDocument<200> doc;
 void callback(char* topic, byte* message, unsigned int length) ;
 
 PubSubClient client(mqtt_server, port,callback,espClient);
@@ -39,20 +40,33 @@ void handle_states(byte number){
 
 }
 
+void set_new_sleep_time(byte* message){
+  DeserializationError error = deserializeJson(doc, message);
+  if (error) { //Check for errors in parsing
+    Serial.println("Parsing failed");
+    sleep_time = 30;
+  }
+  const char * image = doc["image_name"];
+  Serial.println("Sucessfully updated image to:");
+  Serial.println(image);
+  sleep_time = doc["refresh"];
+  Serial.println("Updated refresh Time to :");
+  Serial.println(sleep_time);
+}
+
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.print(topic);
   handle_states(message[9]);
   if(state < 5){
     display.copyToRawPixelBuffer(&(message[21]));
-    display.nextPage();
+    if(state != PART_4_REVCIEVED) display.nextPage(); //4. slides will cause the break of the callback
     client.publish(("Eink_frame/"+String(name)+"/ack").c_str(),String(state).c_str());
   }
   else
     {
-      sleep_time = 30; //TODO change later
+      set_new_sleep_time(message);
       client.publish(("Eink_frame/"+String(name)+"/ack").c_str(),String(state).c_str());
-      //TODO set time to sleep
     }
 }
 
@@ -66,7 +80,7 @@ void setup() {
   initialiseDisplay();
   display.firstPage();
   WiFi.mode(WIFI_STA);
-  WiFi.begin("WIFI", "pwd");
+  WiFi.begin("wifi", "pwd");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(1000);
@@ -80,6 +94,7 @@ void setup() {
   {
     client.loop();
   }
+  display.nextPage(); //Needed to display 4th slice
   display.refresh();
   Serial.println("Entering deep sleep ");
   Serial.flush();  
