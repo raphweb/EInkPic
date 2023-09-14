@@ -4,14 +4,9 @@
 #include <GxEPD2_7C.h>
 #include <DisplayConfig.hpp>
 #include <ArduinoJson.h>
+#include "config.hpp"
 
 
-
-const char* mqtt_server = "homeassistant.local";
-const char* user = "mqttuser";
-const char* pswd = "pwd";
-const char* name = "eink1";
-const int port = 1883;
 enum state_t{
   WAIT_FOR_IMAGE = 0,
   PART_1_REVCIEVED = 1,
@@ -21,7 +16,8 @@ enum state_t{
   CONFIG_RECIEVED = 5,
 };
 state_t state = WAIT_FOR_IMAGE;
-uint64_t sleep_time = 30;
+uint64_t sleep_time = DEFAULT_SLEEP_TIME;
+unsigned long last_message = 0;
 WiFiClient espClient;
 StaticJsonDocument<200> doc;
 void callback(char* topic, byte* message, unsigned int length) ;
@@ -29,6 +25,7 @@ void callback(char* topic, byte* message, unsigned int length) ;
 PubSubClient client(mqtt_server, port,callback,espClient);
 
 void handle_states(byte number){
+  last_message = millis();
   Serial.print("State handling:  ");
   Serial.print(number);
   if (state == ((int)number-48-1)){
@@ -36,6 +33,7 @@ void handle_states(byte number){
       }
   else{
     Serial.print("UPS");
+    state = CONFIG_RECIEVED; // wil try again in 30 minutes
   }
 
 }
@@ -80,19 +78,21 @@ void setup() {
   initialiseDisplay();
   display.firstPage();
   WiFi.mode(WIFI_STA);
-  WiFi.begin("wifi", "pwd");
+  WiFi.begin(WIFI_AP, WIFI_PWD);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(1000);
   } 
-  client.setBufferSize(64000);
+  client.setBufferSize(50000);
   if( client.connect(name,user,pswd)){
     client.subscribe(("Eink_frame/"+String(name)+"/send_image").c_str());
   }
   client.publish(("Eink_frame/"+String(name)+"/get_image").c_str(),"hi_guys"); 
+  last_message = millis();
   while (state < CONFIG_RECIEVED)
   {
     client.loop();
+    if(millis()-last_message>TIMOUT_MQTT) break;
   }
   display.nextPage(); //Needed to display 4th slice
   display.refresh();
