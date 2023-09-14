@@ -78,7 +78,7 @@ void setup() {
   initialiseDisplay();
   display.firstPage();
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_AP, WIFI_PWD);
+  WiFi.begin(WIFI_AP_NAME, WIFI_PWD);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(1000);
