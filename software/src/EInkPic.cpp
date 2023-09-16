@@ -5,6 +5,7 @@
 #include <DisplayConfig.hpp>
 #include <ArduinoJson.h>
 #include "config.hpp"
+#include "nosignalimage.hpp"
 
 
 enum state_t{
@@ -14,6 +15,7 @@ enum state_t{
   PART_3_REVCIEVED = 3,
   PART_4_REVCIEVED = 4,
   CONFIG_RECIEVED = 5,
+  NO_CONNECTION = 6
 };
 state_t state = WAIT_FOR_IMAGE;
 uint64_t sleep_time = DEFAULT_SLEEP_TIME;
@@ -92,9 +94,12 @@ void setup() {
   while (state < CONFIG_RECIEVED)
   {
     client.loop();
-    if(millis()-last_message>TIMOUT_MQTT) break;
+    if(millis()-last_message>TIMOUT_MQTT){
+      display.writeNative(testPic, nullptr, 0, 0, 800, 480, false, false, true);
+      state = NO_CONNECTION;
+      break;} 
   }
-  display.nextPage(); //Needed to display 4th slice
+  if(state != NO_CONNECTION) display.nextPage(); //Needed to display 4th slice
   display.refresh();
   Serial.println("Entering deep sleep ");
   Serial.flush();  
