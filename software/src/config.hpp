@@ -1,4 +1,5 @@
-#define TIMOUT_MQTT  10000
+#define TIMEOUT_WIFI_MS 30000UL
+#define TIMEOUT_MQTT_MS 10000UL
 #define DEFAULT_SLEEP_TIME 30
 #define WIFI_AP_NAME "wifi name"
 #define WIFI_PWD "pwd"
