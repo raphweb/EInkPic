@@ -4,7 +4,7 @@
 #include <GxEPD2_7C.h>
 
 #define GxEPD2_DISPLAY_CLASS GxEPD2_7C
-#define GxEPD2_DRIVER_CLASS GxEPD2_730c
+#define GxEPD2_DRIVER_CLASS GxEPD2_730c_ACeP_730
 
 // Connections for e.g. LOLIN D32
 #define EPD_BUSY  4 // to EPD BUSY
