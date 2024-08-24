@@ -3,7 +3,7 @@ E-Ink Picture Frame with ESP32
 
 ## Getting Started
 
-These instructions will get you a copy of the project (including submodules) up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
@@ -16,7 +16,7 @@ These instructions will get you a copy of the project (including submodules) up 
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/raphweb/EInkPic --recurse-submodules
+   git clone https://github.com/raphweb/EInkPic
    ```
 1. Open Vs Code
 1. Open Platform IO and add Project
